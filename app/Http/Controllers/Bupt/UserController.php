@@ -8,21 +8,14 @@
 
 namespace App\Http\Controllers\Bupt;
 
-
 use App\Http\Controllers\Controller;
+use App\Models\Group;
 
 class UserController extends Controller {
 
     public function anyIndex() {
-        $params = request()->only(['id']);
-        $users = \DB::table('tbl_user')
-            ->leftJoin('tbl_course', function($join) {
-                $join->on('course_id', '=', 'tbl_course.id');
-            })
-            ->selectRaw('tbl_user.id as user_id, tbl_user.name as user_name, tbl_course.id as course_id, tbl_course.name as course_name')
-            ->whereRaw('tbl_user.id = :id', $params)
-            ->take(1)->get();
-        return response()->json($users);
+        $id = request()->input('id');
+        return Group::with(['users'])->find($id)->toJson();
     }
 
     public function anyExcel() {
