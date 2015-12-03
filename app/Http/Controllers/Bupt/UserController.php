@@ -10,12 +10,28 @@ namespace App\Http\Controllers\Bupt;
 
 use App\Http\Controllers\Controller;
 use App\Models\Group;
+use App\Models\User;
 
 class UserController extends Controller {
 
+    public function __construct() {
+        $this->middleware('user.login', ['except' => 'anyLogin']);
+    }
+
+    public function anyLogin() {
+        $all = request()->all();
+        if(isset($all['name']) && isset($all['psw'])) {
+            $user = User::whereRaw('name = ?', [$all['name']])->first();
+            if(isset($user) && $user->psw == $all['psw']) {
+                session(['currentUser' => $user]);
+                return redirect()->action('Bupt\UserController@anyIndex');
+            }
+        }
+        return view('bupt.user.login', request()->all());
+    }
+
     public function anyIndex() {
-        $id = request()->input('id');
-        return Group::with(['users'])->find($id)->toJson();
+        return Group::with(['users'])->get()->toJson();
     }
 
     public function anyExcel() {

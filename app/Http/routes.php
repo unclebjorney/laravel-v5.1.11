@@ -15,11 +15,28 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::any('view/{module?}/{parent?}/{php?}', function ($module = '', $parent = '', $php = '') {
+    $view = trim($module . '.' . $parent . '.' . $php, '.');
+    $viewPath = base_path('resources/views/' . str_replace('.', '/', $view));
+
+    if(is_dir($viewPath)) {
+        $view .= '.index';
+    }
+
+    return view($view, ['user' => request()->all()]);
+});
+
 Route::group([
     'prefix' => 'bupt',
     'namespace' => 'Bupt'
-], function() {
+], function () {
     Route::controllers([
         'user' => 'UserController'
     ]);
+    Route::group([
+        'middleware' => 'user.login'
+    ], function () {
+        Route::controllers([
+        ]);
+    });
 });
